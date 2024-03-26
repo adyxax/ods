@@ -51,7 +51,7 @@ func postIndex() http.Handler {
 			Query:    r.FormValue("query"),
 			Invalid:    true,
 		}
-		query := strings.ToUpper(data.Query)
+		query := strings.TrimSpace(strings.ToUpper(data.Query))
 		for _, w := range words {
 			if w == query {
 				data.Invalid = false
