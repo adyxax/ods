@@ -2,10 +2,14 @@ package main
 
 import (
 	"embed"
+	"golang.org/x/text/runes"
+	"golang.org/x/text/transform"
+	"golang.org/x/text/unicode/norm"
 	"html/template"
 	"log/slog"
 	"net/http"
 	"strings"
+	"unicode"
 )
 
 // Variables to customise the search behaviour
@@ -28,14 +32,14 @@ var indexTemplate = template.Must(template.New("index").ParseFS(templatesFS, "in
 type IndexData struct {
 	HasQuery bool
 	Query    string
-	Invalid    bool
+	Invalid  bool
 }
 
 func getIndex() http.Handler {
 	data := IndexData{
 		HasQuery: false,
 		Query:    "",
-		Invalid:    true,
+		Invalid:  true,
 	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-store, no-cache")
@@ -44,14 +48,15 @@ func getIndex() http.Handler {
 }
 
 func postIndex() http.Handler {
-	words := strings.Split(ods,"\n")
+	normalizer := transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
+	words := strings.Split(ods, "\n")
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		data := IndexData{
 			HasQuery: true,
 			Query:    r.FormValue("query"),
-			Invalid:    true,
+			Invalid:  true,
 		}
-		query := strings.TrimSpace(strings.ToUpper(data.Query))
+		query, _, _ := transform.String(normalizer, strings.TrimSpace(strings.ToUpper(data.Query)))
 		for _, w := range words {
 			if w == query {
 				data.Invalid = false
