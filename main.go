@@ -64,7 +64,6 @@ func postIndex() http.Handler {
 			}
 		}
 		slog.Info("post", "word", query, "invalid", data.Invalid)
-		w.Header().Set("Cache-Control", "no-store, no-cache")
 		indexTemplate.ExecuteTemplate(w, "index.html", data)
 	})
 }
