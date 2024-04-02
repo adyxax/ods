@@ -12,7 +12,7 @@ import (
 	"unicode"
 )
 
-// Variables to customise the search behaviour
+// Variables to customise the search
 const (
 	listenStr = "0.0.0.0:8090"
 )
@@ -63,12 +63,12 @@ func postIndex() http.Handler {
 				break
 			}
 		}
+		slog.Info("post", "word", query, "invalid", data.Invalid)
 		w.Header().Set("Cache-Control", "no-store, no-cache")
 		indexTemplate.ExecuteTemplate(w, "index.html", data)
 	})
 }
 
-// The main function
 func main() {
 	http.Handle("GET /static/", http.FileServer(http.FS(static)))
 	http.Handle("GET /", getIndex())
