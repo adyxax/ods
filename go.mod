@@ -1,4 +1,4 @@
-module git.adyxax.org/adyxax/ods/v2
+module git.adyxax.org/adyxax/ods
 
 go 1.23.0
 
