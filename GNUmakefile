@@ -41,9 +41,31 @@ tidy: ## tidy up the code
 build: ## build the code
 	CGO_ENABLED=0 go build -o $(OUTDIR)/ods ./
 
+.PHONY: clean
+clean: ## clean the code
+	rm -f $(OUTDIR)/ods
+
 .PHONY: run
 run: ## run the code
 	go run ./
+
+##### Containers ###############################################################
+.PHONY: container-build
+container-build: ## build the container image
+	podman build \
+	    -t $(CONTAINER_REGISTRY)/ods:$(CONTAINER_TAG) \
+	    .
+
+.PHONY: container-push
+container-push: ## push the container image to the container registry
+	podman push \
+            $(CONTAINER_REGISTRY)/ods:$(CONTAINER_TAG)
+
+.PHONY: container-run
+container-run: ## run the code inside podman
+	podman run --rm -ti \
+	    -p 8090:8090 \
+	    $(CONTAINER_REGISTRY)/ods:$(CONTAINER_TAG)
 
 ##### Operations ###############################################################
 .PHONY: push
@@ -51,6 +73,6 @@ push: tidy no-dirty check ## push changes to git remote
 	git push git master
 
 .PHONY: deploy
-deploy: check build ## deploy changes to the production server
-	rsync -a --delete $(OUTDIR)/ods root@ods.adyxax.org:/srv/ods/
+deploy: ## deploy changes to the production server
+	rsync $(OUTDIR)/ods root@ods.adyxax.org:/srv/ods/
 	ssh root@ods.adyxax.org "systemctl restart ods"
