@@ -49,6 +49,10 @@ clean: ## clean the code
 run: ## run the code
 	go run ./
 
+.PHONY: unlock
+unlock ## run git-crypt unlock
+	git-crypt unlock
+
 ##### Containers ###############################################################
 .PHONY: container-build
 container-build: ## build the container image
