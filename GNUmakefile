@@ -52,7 +52,9 @@ run: ## run the code
 ##### Containers ###############################################################
 .PHONY: container-build
 container-build: ## build the container image
+	printf "Dockerfile GNUmakefile go.mod go.sum index.html main.go ods.txt" | xargs shasum >checksums
 	podman build \
+	    -v $$PWD:/usr/src/app \
 	    -t $(CONTAINER_REGISTRY)/ods:$(CONTAINER_TAG) \
 	    .
 
