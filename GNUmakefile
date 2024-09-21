@@ -10,10 +10,20 @@ OUTDIR := "."
 CONTAINER_REGISTRY ?= localhost
 CONTAINER_TAG ?= latest
 
+DEPS := Dockerfile GNUmakefile go.mod go.sum index.html main.go ods.txt
+
 ##### Utils ####################################################################
 .PHONY: confirm
 confirm:
 	@echo -n 'Are you sure? [y/N] ' && read ans && [ $${ans:-N} = y ]
+
+.PHONY: git-crypt-unlocked
+git-crypt-unlocked:
+	@git config --local --get filter.git-crypt.smudge >/dev/null || FAIL=1
+	if [[ "$${FAIL:-0}" -gt 0 ]]; then
+	    echo "Please unlock git-crypt before continuing!"
+	    exit 1
+	fi
 
 .PHONY: help
 help:
@@ -38,25 +48,23 @@ tidy: ## tidy up the code
 
 ##### Development ##############################################################
 .PHONY: build
-build: ## build the code
-	CGO_ENABLED=0 go build -o $(OUTDIR)/ods ./
+build: ods ## build the code
 
 .PHONY: clean
 clean: ## clean the code
 	rm -f $(OUTDIR)/ods
 
-.PHONY: run
+ods: git-crypt-unlocked $(DEPS)
+	CGO_ENABLED=0 go build -o $(OUTDIR)/ods ./
+
+.PHONY: git-crypt-unlocked ## run
 run: ## run the code
 	go run ./
 
-.PHONY: unlock
-unlock ## run git-crypt unlock
-	git-crypt unlock
-
 ##### Containers ###############################################################
 .PHONY: container-build
-container-build: ## build the container image
-	printf "Dockerfile GNUmakefile go.mod go.sum index.html main.go ods.txt" | xargs shasum >checksums
+container-build: git-crypt-unlocked ## build the container image
+	@printf $(DEPS) | xargs shasum >checksums
 	podman build \
 	    -v $$PWD:/usr/src/app \
 	    -t $(CONTAINER_REGISTRY)/ods:$(CONTAINER_TAG) \
@@ -79,6 +87,6 @@ push: tidy no-dirty check ## push changes to git remote
 	git push git master
 
 .PHONY: deploy
-deploy: ## deploy changes to the production server
+deploy: ods ## deploy changes to the production server
 	rsync $(OUTDIR)/ods root@ods.adyxax.org:/srv/ods/
 	ssh root@ods.adyxax.org "systemctl restart ods"
