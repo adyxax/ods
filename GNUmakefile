@@ -88,5 +88,5 @@ push: tidy no-dirty check ## push changes to git remote
 
 .PHONY: deploy
 deploy: ods ## deploy changes to the production server
-	rsync $(OUTDIR)/ods root@ods.adyxax.org:/srv/ods/
+	rsync $(OUTDIR)/ods root@ods.adyxax.org:/usr/local/bin/
 	ssh root@ods.adyxax.org "systemctl restart ods"
