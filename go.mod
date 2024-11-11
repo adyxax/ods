@@ -1,5 +1,5 @@
 module git.adyxax.org/adyxax/ods
 
-go 1.23.2
+go 1.23.3
 
-require golang.org/x/text v0.19.0
+require golang.org/x/text v0.20.0
