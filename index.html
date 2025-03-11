@@ -14,13 +14,13 @@
         <input class="fullwidth" type="text" placeholder="Entrez un mot" id="query" name="query" value="{{ .Query }}" minlength="2" maxlength="32" onfocus="this.select()" required autofocus/>
 		<div class=".btn-group">
 		  <input type="submit" value="Valider"/>
-		  {{ if .HasQuery }}
+		  {{ if ne .Query "" }}
 		  <input type="submit" formmethod="GET" value="Effacer"/>
 		  {{ end }}
 		</div>
 	  </form>
 	  <p>
-        {{ if .HasQuery }}
+        {{ if ne .Query "" }}
         <a href="https://dictionnaire.lerobert.com/definition/{{ .Query }}">{{ .Query }}</a> est un mot <span class="{{ if .Invalid }}invalid">IN{{ else }}valid">{{ end }}VALIDE</span> au scrabble.
         {{ end }}
 	  </p>
