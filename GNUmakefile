@@ -5,12 +5,40 @@ SHELL := bash
 MAKEFLAGS += --warn-undefined-variables
 MAKEFLAGS += --no-builtin-rules
 .DEFAULT_GOAL := help
-OUTDIR := "."
 
-CONTAINER_REGISTRY ?= localhost
-CONTAINER_TAG ?= latest
+##### Quality ##################################################################
+.PHONY: check
+check: ## run all code checks
+	go mod verify
+	go vet ./...
 
-DEPS := Dockerfile GNUmakefile go.mod go.sum index.html main.go ods.txt
+.PHONY: tidy
+tidy: ## tidy up the code
+	go fmt ./...
+	go mod tidy -v
+
+##### Development ##############################################################
+.PHONY: build
+build: git-crypt-unlocked ## build the code
+	CGO_ENABLED=0 go build -o ./ods ./
+
+.PHONY: clean
+clean: ## clean the code
+	rm -f ./ods
+
+.PHONY: run
+run: git-crypt-unlocked ## run the code
+	go run ./
+
+##### Operations ###############################################################
+.PHONY: push
+push: tidy no-dirty check ## push changes to git remote
+	git push git main
+
+.PHONY: deploy
+deploy: build ## deploy changes to the production server
+	rsync ./ods root@ods.adyxax.org:/usr/local/bin/
+	ssh root@ods.adyxax.org "systemctl restart ods"
 
 ##### Utils ####################################################################
 .PHONY: confirm
@@ -34,59 +62,3 @@ help:
 .PHONY: no-dirty
 no-dirty:
 	git diff --exit-code
-
-##### Quality ##################################################################
-.PHONY: check
-check: ## run all code checks
-	go mod verify
-	go vet ./...
-
-.PHONY: tidy
-tidy: ## tidy up the code
-	go fmt ./...
-	go mod tidy -v
-
-##### Development ##############################################################
-.PHONY: build
-build: ods ## build the code
-
-.PHONY: clean
-clean: ## clean the code
-	rm -f $(OUTDIR)/ods
-
-ods: git-crypt-unlocked $(DEPS)
-	CGO_ENABLED=0 go build -o $(OUTDIR)/ods ./
-
-.PHONY: git-crypt-unlocked ## run
-run: ## run the code
-	go run ./
-
-##### Containers ###############################################################
-.PHONY: container-build
-container-build: git-crypt-unlocked ## build the container image
-	@printf $(DEPS) | xargs shasum >checksums
-	podman build \
-	    -v $$PWD:/usr/src/app \
-	    -t $(CONTAINER_REGISTRY)/ods:$(CONTAINER_TAG) \
-	    .
-
-.PHONY: container-push
-container-push: ## push the container image to the container registry
-	podman push \
-            $(CONTAINER_REGISTRY)/ods:$(CONTAINER_TAG)
-
-.PHONY: container-run
-container-run: ## run the code inside podman
-	podman run --rm -ti \
-	    -p 8090:8090 \
-	    $(CONTAINER_REGISTRY)/ods:$(CONTAINER_TAG)
-
-##### Operations ###############################################################
-.PHONY: push
-push: tidy no-dirty check ## push changes to git remote
-	git push git master
-
-.PHONY: deploy
-deploy: ods ## deploy changes to the production server
-	rsync $(OUTDIR)/ods root@ods.adyxax.org:/usr/local/bin/
-	ssh root@ods.adyxax.org "systemctl restart ods"
