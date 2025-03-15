@@ -29,22 +29,16 @@ file, sorry for not sharing it.
 
 ## Systemd service
 
-I use this simple systemd service unit to run ODS:
+I use this simple systemd user service unit to run ODS as an unprivileged user:
 
 ``` ini
 [Unit]
-After=network-online.target
 Description=ods.adyxax.org service
-Wants=network-online.target
 
 [Service]
-DynamicUser=yes
 Environment="ODS_PORT=8090"
 ExecStart=/usr/local/bin/ods
 Type=simple
-
-[Install]
-WantedBy=multi-user.target
 ```
 
 ## Nginx reverse proxy

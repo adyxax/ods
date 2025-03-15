@@ -51,8 +51,8 @@ jobs:
           umask 077
           printf '%s' "$SSH_PRIVATE_KEY" | base64 -d > private_key
           SSHOPTS="-i private_key -o StrictHostKeyChecking=accept-new"
-          rsync -e "ssh ${SSHOPTS}" ods root@ods.adyxax.org:/usr/local/bin/
-          ssh ${SSHOPTS} root@ods.adyxax.org "systemctl restart ods"
+          rsync -e "ssh ${SSHOPTS}" ods ods@ods.adyxax.org:
+          ssh ${SSHOPTS} ods@ods.adyxax.org "chmod +x ods; systemctl --user restart ods"
         env:
           SSH_PRIVATE_KEY: '${{ secrets.SSH_PRIVATE_KEY }}'
   publish:
