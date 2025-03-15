@@ -39,6 +39,9 @@ Description=ods.adyxax.org service
 Environment="ODS_PORT=8090"
 ExecStart=/usr/local/bin/ods
 Type=simple
+
+[Install]
+WantedBy=default.target
 ```
 
 ## Nginx reverse proxy
