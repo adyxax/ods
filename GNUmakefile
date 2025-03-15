@@ -37,8 +37,8 @@ push: tidy no-dirty check ## push changes to git remote
 
 .PHONY: deploy
 deploy: build ## deploy changes to the production server
-	rsync ./ods root@ods.adyxax.org:/usr/local/bin/
-	ssh root@ods.adyxax.org "systemctl restart ods"
+	rsync ./ods ods@ods.adyxax.org:
+	ssh ods@ods.adyxax.org "systemctl --user restart ods"
 
 ##### Utils ####################################################################
 .PHONY: confirm

@@ -16,6 +16,13 @@ help` if running BSD) to see the possible actions.
 
 Use `make build` to build a static binary of the service, embedding everything.
 
+## Configuration
+
+ODS can be configured by setting the following environment variables:
+- `ODS_DEBUG`: Set this to a non empty string to activate debug logs.
+- `ODS_HOST`: Hostname or address to listen on, defaults to `127.0.0.1`.
+- `ODS_PORT`: TCP port to listen on, defaults to `8080`.
+
 ## The dictionary
 
 The "Officiel Du Scrabble" (ODS for short) is what the official dictionary for
