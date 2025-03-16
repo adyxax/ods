@@ -16,7 +16,7 @@ jobs:
           make tidy no-dirty
       - name: 'check'
         run: |
-          make check tidy no-dirty
+          make check no-dirty
   build:
     if: "${{ startsWith(github.ref, 'refs/tags/') }}"
     needs:
@@ -71,4 +71,4 @@ jobs:
           release-dir: './'
           token: '${{ env.GITHUB_TOKEN }}'
           hide-archive-link: true
-          release-notes-assistant: true
+          prerelease: true
