@@ -34,7 +34,8 @@ jobs:
           make build
         env:
           GIT_CRYPT_SECRET: '${{ secrets.GIT_CRYPT }}'
-      - uses: 'actions/upload-artifact@v3'
+      #- uses: 'actions/upload-artifact@v4'
+      - uses: 'forgejo/upload-artifact@v4'
         with:
           if-no-files-found: 'error'
           name: 'ods'
@@ -44,7 +45,8 @@ jobs:
       - 'build'
     runs-on: 'self-hosted'
     steps:
-      - uses: 'actions/download-artifact@v3'
+      #- uses: 'actions/download-artifact@v4'
+      - uses: 'forgejo/download-artifact@v4'
         with:
           name: 'ods'
       - run: |
@@ -60,7 +62,8 @@ jobs:
       - 'build'
     runs-on: 'self-hosted'
     steps:
-      - uses: 'actions/download-artifact@v3'
+      #- uses: 'actions/download-artifact@v4'
+      - uses: 'forgejo/download-artifact@v4'
         with:
           name: 'ods'
       - uses: 'actions/forgejo-release@v2'
