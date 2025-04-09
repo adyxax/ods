@@ -37,8 +37,17 @@ push: tidy no-dirty check ## push changes to git remote
 
 .PHONY: deploy
 deploy: build ## deploy changes to the production server
-	rsync ./ods ods@ods.adyxax.org:
-	ssh ods@ods.adyxax.org "systemctl --user restart ods"
+	umask 077
+	if [ -n "$${SSH_PRIVATE_KEY:-}" ]; then
+	    cleanup() {
+	        rm -f private_key
+	    }
+	    trap cleanup EXIT
+	    printf '%s' "$$SSH_PRIVATE_KEY" | base64 -d > private_key
+	    SSHOPTS="-i private_key -o StrictHostKeyChecking=accept-new"
+	fi
+	rsync -e "ssh $${SSHOPTS:-}" ./ods ods@ods.adyxax.org:
+	ssh $${SSHOPTS:-} ods@ods.adyxax.org "chmod +x ods; systemctl --user restart ods"
 
 ##### Utils ####################################################################
 .PHONY: confirm
