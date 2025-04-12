@@ -1,10 +1,12 @@
 ---
+name: 'main'
+
 on:
   push:
   workflow_dispatch:
 
 jobs:
-  test:
+  main:
     runs-on: 'self-hosted'
     steps:
       - uses: 'actions/checkout@v4'
@@ -17,16 +19,6 @@ jobs:
       - name: 'check'
         run: |
           make check no-dirty
-  build:
-    if: "${{ startsWith(github.ref, 'refs/tags/') }}"
-    needs:
-      - 'test'
-    runs-on: 'self-hosted'
-    steps:
-      - uses: 'actions/checkout@v4'
-      - uses: 'actions/setup-go@v5'
-        with:
-          go-version-file: 'go.mod'
       - name: 'build'
         run: |
           printf '%s' "$GIT_CRYPT_SECRET" | base64 -d > secret
@@ -36,13 +28,15 @@ jobs:
           GIT_CRYPT_SECRET: '${{ secrets.GIT_CRYPT }}'
       #- uses: 'actions/upload-artifact@v4'
       - uses: 'forgejo/upload-artifact@v4'
+        if: "${{ startsWith(github.ref, 'refs/tags/') }}"
         with:
           if-no-files-found: 'error'
           name: 'ods'
           path: 'ods'
   deploy:
+    if: "${{ startsWith(github.ref, 'refs/tags/') }}"
     needs:
-      - 'build'
+      - 'main'
     runs-on: 'self-hosted'
     steps:
       #- uses: 'actions/download-artifact@v4'
@@ -54,8 +48,9 @@ jobs:
         env:
           SSH_PRIVATE_KEY: '${{ secrets.SSH_PRIVATE_KEY }}'
   publish:
+    if: "${{ startsWith(github.ref, 'refs/tags/') }}"
     needs:
-      - 'build'
+      - 'main'
     runs-on: 'self-hosted'
     steps:
       #- uses: 'actions/download-artifact@v4'
@@ -70,4 +65,4 @@ jobs:
           release-dir: './'
           token: '${{ env.GITHUB_TOKEN }}'
           hide-archive-link: true
-          prerelease: true
+          prerelease: false
