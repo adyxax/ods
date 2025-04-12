@@ -1,4 +1,6 @@
 ---
+name: 'main'
+
 on:
   push:
   workflow_dispatch:
@@ -17,7 +19,7 @@ jobs:
       - name: 'check'
         run: |
           make check no-dirty
-  build:
+  main:
     if: "${{ startsWith(github.ref, 'refs/tags/') }}"
     needs:
       - 'test'
@@ -34,40 +36,8 @@ jobs:
           make build
         env:
           GIT_CRYPT_SECRET: '${{ secrets.GIT_CRYPT }}'
-      #- uses: 'actions/upload-artifact@v4'
-      - uses: 'forgejo/upload-artifact@v4'
-        with:
-          if-no-files-found: 'error'
-          name: 'ods'
-          path: 'ods'
-  deploy:
-    needs:
-      - 'build'
-    runs-on: 'self-hosted'
-    steps:
-      #- uses: 'actions/download-artifact@v4'
-      - uses: 'forgejo/download-artifact@v4'
-        with:
-          name: 'ods'
-      - run: |
+      - name: 'deploy'
+        run: |
           make deploy
         env:
           SSH_PRIVATE_KEY: '${{ secrets.SSH_PRIVATE_KEY }}'
-  publish:
-    needs:
-      - 'build'
-    runs-on: 'self-hosted'
-    steps:
-      #- uses: 'actions/download-artifact@v4'
-      - uses: 'forgejo/download-artifact@v4'
-        with:
-          name: 'ods'
-      - uses: 'actions/forgejo-release@v2'
-        with:
-          direction: 'upload'
-          tag: '${{ github.ref_name }}'
-          sha: '${{ github.sha }}'
-          release-dir: './'
-          token: '${{ env.GITHUB_TOKEN }}'
-          hide-archive-link: true
-          prerelease: true
